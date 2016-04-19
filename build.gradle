@@ -1,0 +1,56 @@
+/*
+ * Copyright (c) 2016 Radai Rosenblatt.
+ * This file is part of Garbanzo.
+ *
+ *  Garbanzo is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Garbanzo is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Garbanzo.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = "com.github.radai-rosenblatt"
+version = "0.1-SNAPSHOT"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+compileJava {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
+test {
+    useTestNG()
+}
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier = 'sources'
+}
+
+artifacts {
+    archives sourceJar
+}
+
+dependencies {
+    compile 'com.github.radai-rosenblatt:beanz:0.1-SNAPSHOT'
+    compile 'org.ini4j:ini4j:0.5.4'
+    compile 'org.apache.logging.log4j:log4j-api:2.5'
+    testCompile 'org.testng:testng:6.9.10'
+    testCompile 'org.apache.commons:commons-lang3:3.4'
+    testCompile 'org.apache.logging.log4j:log4j-core:2.5'
+}
