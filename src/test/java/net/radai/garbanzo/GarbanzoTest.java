@@ -18,6 +18,7 @@
 
 package net.radai.garbanzo;
 
+import net.radai.garbanzo.annotations.IniDocumentation;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -61,6 +62,37 @@ public class GarbanzoTest {
         BeanClass deserialized = Garbanzo.unmarshall(BeanClass.class, serialized);
 
         Assert.assertEquals(original, deserialized);
+    }
+
+    @Test
+    public void testDocumentation() throws Exception {
+        DocumentedClass outer = new DocumentedClass();
+        outer.f1 = "a";
+        outer.f2 = "";
+        DocumentedInnerClass inner = new DocumentedInnerClass();
+        inner.f1 = "bob";
+        outer.setF3(inner);
+        outer.f4 = inner;
+
+        String serialized = Garbanzo.marshal(outer).trim().replaceAll("\r?\n", "\n");
+
+        Assert.assertEquals(
+                "#document me\n" +
+                "#something\n" +
+                "f1 = a\n" +
+                "#something else\n" +
+                "f2 = \n" +
+                "\n" +
+                "#on f3\n" +
+                "[f3]\n" +
+                "#on getter\n" +
+                "f1 = bob\n" +
+                "\n" +
+                "#inner class\n" +
+                "[f4]\n" +
+                "#on getter\n" +
+                "f1 = bob",
+                serialized);
     }
 
     public enum Enum1 {
@@ -114,6 +146,40 @@ public class GarbanzoTest {
         @Override
         public int hashCode() {
             return Objects.hash(f1);
+        }
+    }
+
+    @IniDocumentation
+    public static class DocumentedClass {
+        @IniDocumentation("something")
+        private String f1;
+        private String f2;
+        @IniDocumentation("on f3")
+        private DocumentedInnerClass f3;
+        private DocumentedInnerClass f4;
+
+        @IniDocumentation("something else")
+        public String getF2() {
+            return f2;
+        }
+
+        public void setF2(String f2) {
+            this.f2 = f2;
+        }
+
+        public void setF3(DocumentedInnerClass f3) {
+            this.f3 = f3;
+        }
+    }
+
+    @IniDocumentation("inner class")
+    public static class DocumentedInnerClass {
+        @IniDocumentation("on field")
+        private String f1;
+
+        @IniDocumentation("on getter")
+        public String getF1() {
+            return f1;
         }
     }
 }

@@ -21,6 +21,7 @@ package net.radai.garbanzo;
 import net.radai.beanz.Beanz;
 import net.radai.beanz.api.*;
 import net.radai.beanz.util.ReflectionUtil;
+import net.radai.garbanzo.annotations.IniDocumentation;
 import net.radai.garbanzo.util.Inflection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,10 +49,18 @@ public class Garbanzo {
         Profile.Section defaultSection = ini.add(iniConfig.getGlobalSectionName());
 
         Bean<T> bean = Beanz.wrap(beanInstance);
+
+        IniDocumentation docAnnotation = bean.getAnnotation(IniDocumentation.class);
+        if (docAnnotation != null) {
+            ini.putComment(iniConfig.getGlobalSectionName(), docAnnotation.value());
+        }
+
         for (Map.Entry<String, Property> propEntry : bean.getProperties().entrySet()) {
             String propName = propEntry.getKey();
             Property prop = propEntry.getValue();
             net.radai.beanz.api.Codec codec = prop.getCodec();
+            docAnnotation = prop.getAnnotation(IniDocumentation.class);
+            String comment = docAnnotation != null ? docAnnotation.value() : null;
             String singular;
             //TODO - differentiate between nulls and empty sets
             switch (prop.getType()) {
@@ -61,13 +70,25 @@ public class Garbanzo {
                         String stringValue = prop.getAsString();
                         if (stringValue != null) {
                             defaultSection.put(propName, stringValue);
+                            if (comment != null) {
+                                defaultSection.putComment(propName, comment);
+                            }
                         }
                     } else {
                         //prop --> section
                         Object rawValue = prop.get();
                         if (rawValue != null) {
-                            Bean innerBean = Beanz.wrap(rawValue);
+                            Bean<?> innerBean = Beanz.wrap(rawValue);
                             Profile.Section targetSection = ini.add(propName);
+                            if (comment == null) { //if no comment on the field maybe there's one on the value type
+                                docAnnotation = innerBean.getAnnotation(IniDocumentation.class);
+                                if (docAnnotation != null) {
+                                    comment = docAnnotation.value();
+                                }
+                            }
+                            if (comment != null) {
+                                ini.putComment(propName, comment);
+                            }
                             serializeToSection(innerBean, targetSection);
                         }
                     }
@@ -80,10 +101,13 @@ public class Garbanzo {
                         List<String> stringValues = arrayProp.getAsStrings();
                         if (stringValues != null) {
                             defaultSection.putAll(singular, stringValues);
+                            if (comment != null) {
+                                defaultSection.putComment(propName, comment);
+                            }
                         }
                     } else {
                         //prop --> multi section (potentially under singular name)
-                        serializeToSections(ini, arrayProp.getAsList(), singular);
+                        serializeToSections(ini, arrayProp.getAsList(), singular, comment);
                     }
                     break;
                 case COLLECTION:
@@ -94,10 +118,13 @@ public class Garbanzo {
                         Collection<String> asStrings = collectionProp.getAsStrings();
                         if (asStrings != null) {
                             defaultSection.putAll(singular, new ArrayList<>(asStrings)); //orig might be a set
+                            if (comment != null) {
+                                defaultSection.putComment(propName, comment);
+                            }
                         }
                     } else {
                         //prop --> multi section (potentially under singular name)
-                        serializeToSections(ini, collectionProp.getCollection(), singular);
+                        serializeToSections(ini, collectionProp.getCollection(), singular, comment);
                     }
                     break;
                 case MAP:
@@ -108,6 +135,9 @@ public class Garbanzo {
                         if (asStrings != null) {
                             Profile.Section targetSection = ini.add(propName);
                             targetSection.putAll(asStrings);
+                            if (comment != null) {
+                                ini.putComment(propName, comment);
+                            }
                         }
                     } else {
                         throw new UnsupportedOperationException(); //TODO - figure out how to map Map<String, ComplexBean> ?
@@ -258,7 +288,7 @@ public class Garbanzo {
         return values;
     }
 
-    private static void serializeToSections(Ini ini, Iterable<?> beans, String propName) {
+    private static void serializeToSections(Ini ini, Iterable<?> beans, String propName, String comment) {
         if (beans != null) {
             for (Object rawValue : beans) {
                 Profile.Section targetSection = ini.add(propName);
@@ -268,6 +298,9 @@ public class Garbanzo {
                     if (targetSection.isEmpty()) { //ambiguous
                         log.warn("non-null object {} was serialized into an empty section, which would be deserialized into null", rawValue);
                     }
+                }
+                if (comment != null) {
+                    ini.putComment(propName, comment);
                 }
             }
         }
@@ -281,13 +314,17 @@ public class Garbanzo {
             if (codec == null) {
                 throw new UnsupportedOperationException(); //ini does not support nested sections
             }
+            IniDocumentation docAnnotation = prop.getAnnotation(IniDocumentation.class);
+            String comment = docAnnotation != null ? docAnnotation.value() : null;
             String singular;
+            boolean written = false;
             switch (prop.getType()) {
                 case SIMPLE:
                     //prop --> string
                     String stringValue = prop.getAsString();
                     if (stringValue != null) {
                         section.put(propName, stringValue);
+                        written = true;
                     }
                     break;
                 case ARRAY:
@@ -297,6 +334,7 @@ public class Garbanzo {
                     List<String> stringValues = arrayProp.getAsStrings();
                     if (stringValues != null) {
                         section.putAll(singular, stringValues);
+                        written = true;
                     }
                     break;
                 case COLLECTION:
@@ -306,6 +344,7 @@ public class Garbanzo {
                     Collection<String> asStrings = collectionProp.getAsStrings();
                     if (asStrings != null) {
                         section.putAll(singular, new ArrayList<>(asStrings)); //turn into a list (orig might be a set)
+                        written = true;
                     }
                     break;
                 case MAP:
@@ -313,6 +352,10 @@ public class Garbanzo {
                             + prop + " because the INI format does not support nested sections");
                 default:
                     throw new IllegalStateException("unhandled: " + prop.getType());
+            }
+
+            if (written && comment != null) {
+                section.putComment(propName, comment);
             }
         }
     }
