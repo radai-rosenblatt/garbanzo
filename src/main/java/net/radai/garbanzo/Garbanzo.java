@@ -312,7 +312,8 @@ public class Garbanzo {
             Property prop = propEntry.getValue();
             net.radai.beanz.api.Codec codec = prop.getCodec();
             if (codec == null) {
-                throw new UnsupportedOperationException(); //ini does not support nested sections
+                throw new UnsupportedOperationException("unable to serialize "
+                        + prop + " because the INI format does not support nested sections");
             }
             IniComment docAnnotation = prop.getAnnotation(IniComment.class);
             String comment = docAnnotation != null ? docAnnotation.value() : null;
