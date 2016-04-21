@@ -25,6 +25,6 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
-public @interface IniDocumentation {
+public @interface IniComment {
     String value() default "document me";
 }

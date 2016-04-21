@@ -18,7 +18,7 @@
 
 package net.radai.garbanzo;
 
-import net.radai.garbanzo.annotations.IniDocumentation;
+import net.radai.garbanzo.annotations.IniComment;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -149,16 +149,16 @@ public class GarbanzoTest {
         }
     }
 
-    @IniDocumentation
+    @IniComment
     public static class DocumentedClass {
-        @IniDocumentation("something")
+        @IniComment("something")
         private String f1;
         private String f2;
-        @IniDocumentation("on f3")
+        @IniComment("on f3")
         private DocumentedInnerClass f3;
         private DocumentedInnerClass f4;
 
-        @IniDocumentation("something else")
+        @IniComment("something else")
         public String getF2() {
             return f2;
         }
@@ -172,12 +172,12 @@ public class GarbanzoTest {
         }
     }
 
-    @IniDocumentation("inner class")
+    @IniComment("inner class")
     public static class DocumentedInnerClass {
-        @IniDocumentation("on field")
+        @IniComment("on field")
         private String f1;
 
-        @IniDocumentation("on getter")
+        @IniComment("on getter")
         public String getF1() {
             return f1;
         }

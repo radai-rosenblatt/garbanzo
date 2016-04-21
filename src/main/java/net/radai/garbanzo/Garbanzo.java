@@ -21,7 +21,7 @@ package net.radai.garbanzo;
 import net.radai.beanz.Beanz;
 import net.radai.beanz.api.*;
 import net.radai.beanz.util.ReflectionUtil;
-import net.radai.garbanzo.annotations.IniDocumentation;
+import net.radai.garbanzo.annotations.IniComment;
 import net.radai.garbanzo.util.Inflection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +50,7 @@ public class Garbanzo {
 
         Bean<T> bean = Beanz.wrap(beanInstance);
 
-        IniDocumentation docAnnotation = bean.getAnnotation(IniDocumentation.class);
+        IniComment docAnnotation = bean.getAnnotation(IniComment.class);
         if (docAnnotation != null) {
             ini.putComment(iniConfig.getGlobalSectionName(), docAnnotation.value());
         }
@@ -59,7 +59,7 @@ public class Garbanzo {
             String propName = propEntry.getKey();
             Property prop = propEntry.getValue();
             net.radai.beanz.api.Codec codec = prop.getCodec();
-            docAnnotation = prop.getAnnotation(IniDocumentation.class);
+            docAnnotation = prop.getAnnotation(IniComment.class);
             String comment = docAnnotation != null ? docAnnotation.value() : null;
             String singular;
             //TODO - differentiate between nulls and empty sets
@@ -81,7 +81,7 @@ public class Garbanzo {
                             Bean<?> innerBean = Beanz.wrap(rawValue);
                             Profile.Section targetSection = ini.add(propName);
                             if (comment == null) { //if no comment on the field maybe there's one on the value type
-                                docAnnotation = innerBean.getAnnotation(IniDocumentation.class);
+                                docAnnotation = innerBean.getAnnotation(IniComment.class);
                                 if (docAnnotation != null) {
                                     comment = docAnnotation.value();
                                 }
@@ -314,7 +314,7 @@ public class Garbanzo {
             if (codec == null) {
                 throw new UnsupportedOperationException(); //ini does not support nested sections
             }
-            IniDocumentation docAnnotation = prop.getAnnotation(IniDocumentation.class);
+            IniComment docAnnotation = prop.getAnnotation(IniComment.class);
             String comment = docAnnotation != null ? docAnnotation.value() : null;
             String singular;
             boolean written = false;
