@@ -47,7 +47,7 @@ artifacts {
 }
 
 dependencies {
-    compile 'com.github.radai-rosenblatt:beanz:0.1-SNAPSHOT'
+    compile 'com.github.radai-rosenblatt:beanz:master-SNAPSHOT'
     compile 'org.ini4j:ini4j:0.5.4'
     compile 'org.apache.logging.log4j:log4j-api:2.5'
     testCompile 'org.testng:testng:6.9.10'
