@@ -23,7 +23,7 @@ Person unmarshalled = Garbanzo.unmarshall(Person.class, marshalled);
 <dependency>
     <groupId>com.github.radai-rosenblatt</groupId>
     <artifactId>garbanzo</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>master-SNAPSHOT</version>
 </dependency>
 ...
 <repositories>
